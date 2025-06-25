@@ -1,109 +1,71 @@
 'use client'
 
-import { Trash2Icon, TagIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Transaction } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import * as React from 'react';
+import { Delete as TrashIcon, LocalOffer as TagIcon } from '@mui/icons-material';
+import { Box, Card, CardContent, Typography, IconButton, Stack, Chip } from '@mui/material';
+import { Transaction } from '@/lib/types';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 interface TransactionListProps {
-  transactions: Transaction[]
-  onDelete: (id: string) => void
-  compact?: boolean
+  transactions: Transaction[];
+  onDelete: (id: string) => void;
+  compact?: boolean;
 }
 
 export function TransactionList({ transactions, onDelete, compact = false }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        <p>No transactions yet. Add your first transaction to get started!</p>
-      </div>
-    )
-  }
-
-  if (compact) {
-    return (
-      <div className="space-y-3">
-        {transactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-          >
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  {transaction.description}
-                </h3>
-                <span
-                  className={`font-bold ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                <span>{transaction.category}</span>
-                <span>•</span>
-                <span>{formatDate(transaction.date)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
+      <Box textAlign="center" py={6} color="text.secondary">
+        <Typography variant="h6" gutterBottom>No transactions yet</Typography>
+        <Typography variant="body2">Add your first transaction to get started!</Typography>
+      </Box>
+    );
   }
 
   return (
-    <div className="overflow-hidden">
-      <div className="space-y-2">
-        {transactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {transaction.description}
-                </h3>
-                <span
-                  className={`text-lg font-bold ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                </span>
-              </div>
-              
-              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  transaction.type === 'income' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                    : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                }`}>
-                  {transaction.category}
-                </span>
-                <span>{formatDate(transaction.date)}</span>
-                {transaction.tags && transaction.tags.length > 0 && (
-                  <div className="flex items-center space-x-1">
-                    <TagIcon className="h-3 w-3" />
-                    <span>{transaction.tags.join(', ')}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(transaction.id)}
-              className="ml-4 text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2Icon className="h-4 w-4" />
-            </Button>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+    <Stack spacing={2} pt={compact ? 2 : 4}>
+      {transactions.map((transaction) => (
+        <Card key={transaction.id} sx={{ borderRadius: 3, boxShadow: 3, bgcolor: compact ? 'grey.800' : 'background.paper', color: 'text.primary' }}>
+          <CardContent sx={{ p: compact ? 2 : 3 }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Typography variant={compact ? 'subtitle1' : 'h6'} fontWeight={600} noWrap>
+                {transaction.description}
+              </Typography>
+              <Typography
+                variant={compact ? 'subtitle1' : 'h6'}
+                fontWeight={700}
+                color={transaction.type === 'income' ? 'success.main' : 'error.main'}
+                sx={{ ml: 2 }}
+              >
+                {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={2} mt={1}>
+              <Chip
+                label={transaction.category}
+                color={transaction.type === 'income' ? 'success' : 'error'}
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {formatDate(transaction.date)}
+              </Typography>
+              {transaction.tags && transaction.tags.length > 0 && (
+                <>
+                  <TagIcon sx={{ fontSize: 16, ml: 1, color: 'action.active' }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {transaction.tags.join(', ')}
+                  </Typography>
+                </>
+              )}
+              <Box flexGrow={1} />
+              <IconButton onClick={() => onDelete(transaction.id)} color="error" size="small">
+                <TrashIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
 }

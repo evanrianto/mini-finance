@@ -1,92 +1,84 @@
 'use client'
 
-import { TrendingUpIcon, TrendingDownIcon, DollarSignIcon, WalletIcon } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
-import { DashboardStats } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
+import * as React from 'react';
+import { TrendingUp, TrendingDown, AttachMoney, AccountBalanceWallet } from '@mui/icons-material';
+import { Card, CardContent, Typography, Box, Stack, Avatar } from '@mui/material';
+import { DashboardStats } from '@/lib/types';
+import { formatCurrency } from '@/lib/utils';
 
 interface StatsCardsProps {
-  stats: DashboardStats
+  stats: DashboardStats;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-  const incomeChange = stats.previousMonthIncome 
+  const incomeChange = stats.previousMonthIncome
     ? ((stats.currentMonthIncome - stats.previousMonthIncome) / stats.previousMonthIncome) * 100
-    : 0
-
+    : 0;
   const expenseChange = stats.previousMonthExpenses
     ? ((stats.currentMonthExpenses - stats.previousMonthExpenses) / stats.previousMonthExpenses) * 100
-    : 0
+    : 0;
 
   const cards = [
     {
       title: 'Total Income',
       value: stats.totalIncome,
-      icon: TrendingUpIcon,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      icon: <TrendingUp color="success" />, // green
+      color: 'success.main',
       change: incomeChange,
       isPositive: incomeChange >= 0
     },
     {
       title: 'Total Expenses',
       value: stats.totalExpenses,
-      icon: TrendingDownIcon,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      icon: <TrendingDown color="error" />, // red
+      color: 'error.main',
       change: expenseChange,
       isPositive: expenseChange <= 0
     },
     {
       title: 'Net Income',
       value: stats.netIncome,
-      icon: DollarSignIcon,
-      color: stats.netIncome >= 0 ? 'text-green-600' : 'text-red-600',
-      bgColor: stats.netIncome >= 0 ? 'bg-green-50' : 'bg-red-50',
+      icon: <AttachMoney color={stats.netIncome >= 0 ? 'success' : 'error'} />, // green or red
+      color: stats.netIncome >= 0 ? 'success.main' : 'error.main',
       change: 0,
       isPositive: stats.netIncome >= 0
     },
     {
       title: 'This Month',
       value: stats.currentMonthIncome - stats.currentMonthExpenses,
-      icon: WalletIcon,
-      color: (stats.currentMonthIncome - stats.currentMonthExpenses) >= 0 ? 'text-blue-600' : 'text-red-600',
-      bgColor: (stats.currentMonthIncome - stats.currentMonthExpenses) >= 0 ? 'bg-blue-50' : 'bg-red-50',
+      icon: <AccountBalanceWallet color={(stats.currentMonthIncome - stats.currentMonthExpenses) >= 0 ? 'primary' : 'error'} />, // blue or red
+      color: (stats.currentMonthIncome - stats.currentMonthExpenses) >= 0 ? 'primary.main' : 'error.main',
       change: 0,
       isPositive: (stats.currentMonthIncome - stats.currentMonthExpenses) >= 0
     }
-  ]
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cards.map((card) => {
-        const Icon = card.icon
-        return (
-          <Card key={card.title} className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {card.title}
-                  </p>
-                  <p className={`text-2xl font-bold ${card.color}`}>
-                    {formatCurrency(card.value)}
-                  </p>
-                  {card.change !== 0 && (
-                    <p className={`text-xs ${card.isPositive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
-                      {card.isPositive ? <TrendingUpIcon className="h-3 w-3 mr-1" /> : <TrendingDownIcon className="h-3 w-3 mr-1" />}
-                      {Math.abs(card.change).toFixed(1)}% from last month
-                    </p>
-                  )}
-                </div>
-                <div className={`p-3 rounded-full ${card.bgColor}`}>
-                  <Icon className={`h-6 w-6 ${card.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })}
-    </div>
-  )
+    <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} mb={3}>
+      {cards.map((card) => (
+        <Card key={card.title} sx={{ flex: 1, bgcolor: 'background.paper', color: 'text.primary', borderRadius: 3, boxShadow: 3 }}>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary" fontWeight={600} mb={0.5}>
+                  {card.title}
+                </Typography>
+                <Typography variant="h5" fontWeight={700} color={card.color}>
+                  {formatCurrency(card.value)}
+                </Typography>
+                {card.change !== 0 && (
+                  <Typography variant="caption" color={card.isPositive ? 'success.main' : 'error.main'}>
+                    {card.isPositive ? '+' : '-'}{Math.abs(card.change).toFixed(1)}% from last month
+                  </Typography>
+                )}
+              </Box>
+              <Avatar sx={{ bgcolor: 'grey.100', color: card.color, width: 48, height: 48 }}>
+                {card.icon}
+              </Avatar>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
 }

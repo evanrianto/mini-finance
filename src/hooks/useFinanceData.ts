@@ -6,87 +6,49 @@ import { getMonthName } from '@/lib/utils'
 
 export function useFinanceData() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Load data from localStorage on mount
+  // Fetch transactions from API
   useEffect(() => {
-    const stored = localStorage.getItem('finance-transactions')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored).map((t: any) => ({
-          ...t,
-          date: new Date(t.date)
-        }))
-        setTransactions(parsed)
-      } catch (error) {
-        console.error('Error loading transactions:', error)
-      }
-    } else {
-      // Add some sample data for demo
-      const sampleTransactions: Transaction[] = [
-        {
-          id: '1',
-          amount: 5000,
-          description: 'Salary',
-          category: 'Salary',
-          type: 'income',
-          date: new Date(2024, 5, 1),
-          tags: ['work']
-        },
-        {
-          id: '2',
-          amount: 1200,
-          description: 'Rent',
-          category: 'Housing',
-          type: 'expense',
-          date: new Date(2024, 5, 1),
-          tags: ['monthly', 'fixed']
-        },
-        {
-          id: '3',
-          amount: 300,
-          description: 'Groceries',
-          category: 'Food',
-          type: 'expense',
-          date: new Date(2024, 5, 5),
-          tags: ['essential']
-        },
-        {
-          id: '4',
-          amount: 150,
-          description: 'Gas',
-          category: 'Transportation',
-          type: 'expense',
-          date: new Date(2024, 5, 8),
-          tags: ['car']
-        },
-        {
-          id: '5',
-          amount: 500,
-          description: 'Freelance Project',
-          category: 'Freelance',
-          type: 'income',
-          date: new Date(2024, 5, 15),
-          tags: ['side-income']
-        }
-      ]
-      setTransactions(sampleTransactions)
-    }
+    setLoading(true)
+    fetch('/api/transactions')
+      .then(res => res.json())
+      .then(data => {
+        setTransactions(
+          data.map((t: any) => ({
+            ...t,
+            date: new Date(t.date),
+            tags: t.tags ? t.tags.split(',').filter((tag: string) => tag) : [],
+          }))
+        )
+        setLoading(false)
+      })
+      .catch(err => {
+        setError('Failed to load transactions')
+        setLoading(false)
+      })
   }, [])
 
-  // Save to localStorage whenever transactions change
-  useEffect(() => {
-    localStorage.setItem('finance-transactions', JSON.stringify(transactions))
-  }, [transactions])
-
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction: Transaction = {
-      ...transaction,
-      id: Date.now().toString()
-    }
-    setTransactions(prev => [newTransaction, ...prev])
+  const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    const res = await fetch('/api/transactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...transaction,
+        tags: transaction.tags?.join(',') || '',
+      }),
+    })
+    const newTx = await res.json()
+    setTransactions(prev => [{
+      ...newTx,
+      date: new Date(newTx.date),
+      tags: newTx.tags ? newTx.tags.split(',').filter((tag: string) => tag) : [],
+    }, ...prev])
   }
 
-  const deleteTransaction = (id: string) => {
+  const deleteTransaction = async (id: string) => {
+    await fetch(`/api/transactions/${id}`, { method: 'DELETE' })
     setTransactions(prev => prev.filter(t => t.id !== id))
   }
 
@@ -201,6 +163,8 @@ export function useFinanceData() {
     deleteTransaction,
     getStats,
     getMonthlyData,
-    getCategorySpending
+    getCategorySpending,
+    loading,
+    error,
   }
 }

@@ -46,29 +46,29 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 relative">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl w-full max-w-md p-8 relative shadow-3xl border border-gray-200/60 dark:border-gray-700/60">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8">
           Add Transaction
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Type Selection */}
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             <button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, type: 'income', category: '' }))}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                 formData.type === 'income'
-                  ? 'bg-green-100 text-green-800 border border-green-300'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-200 border-2 border-emerald-300 dark:border-emerald-600 shadow-md'
+                  : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 border-2 border-transparent'
               }`}
             >
               Income
@@ -76,10 +76,10 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
             <button
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, type: 'expense', category: '' }))}
-              className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                 formData.type === 'expense'
-                  ? 'bg-red-100 text-red-800 border border-red-300'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-200 border-2 border-red-300 dark:border-red-600 shadow-md'
+                  : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 border-2 border-transparent'
               }`}
             >
               Expense
@@ -88,7 +88,7 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
 
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Amount
             </label>
             <Input
@@ -97,14 +97,14 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
               value={formData.amount}
               onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
               placeholder="0.00"
-              className="w-full"
+              className="w-full h-12 text-lg font-medium"
               required
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Description
             </label>
             <Input
@@ -112,20 +112,20 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Enter description"
-              className="w-full"
+              className="w-full h-12"
               required
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Category
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full h-12 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-gray-100 text-base"
               required
             >
               <option value="">Select category</option>
@@ -139,21 +139,21 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
 
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Date
             </label>
             <Input
               type="date"
               value={formData.date}
               onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-              className="w-full"
+              className="w-full h-12"
               required
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               Tags (optional)
             </label>
             <Input
@@ -161,26 +161,26 @@ export function TransactionForm({ onSubmit, onClose }: TransactionFormProps) {
               value={formData.tags}
               onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
               placeholder="work, monthly, fixed (comma separated)"
-              className="w-full"
+              className="w-full h-12"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-4 pt-6">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="flex-1"
+              className="flex-1 h-12 text-base font-semibold border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className={`flex-1 ${
+              className={`flex-1 h-12 text-base font-semibold ${
                 formData.type === 'income'
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-red-600 hover:bg-red-700'
+                  ? 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600'
+                  : 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600'
               }`}
             >
               Add {formData.type === 'income' ? 'Income' : 'Expense'}

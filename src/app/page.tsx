@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { PlusIcon, TrendingUpIcon, TrendingDownIcon, DollarSignIcon } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { TransactionForm } from '@/components/TransactionForm'
-import { TransactionList } from '@/components/TransactionList'
-import { AnalyticsCharts } from '@/components/AnalyticsCharts'
-import { StatsCards } from '@/components/StatsCards'
-import { useFinanceData } from '@/hooks/useFinanceData'
-import { formatCurrency } from '@/lib/utils'
+import * as React from 'react';
+import { useState } from 'react';
+import { Box, Button, Card, CardContent, CardHeader, Typography, Tabs, Tab, Container } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { TransactionForm } from '@/components/TransactionForm';
+import { TransactionList } from '@/components/TransactionList';
+import { AnalyticsCharts } from '@/components/AnalyticsCharts';
+import { StatsCards } from '@/components/StatsCards';
+import { useFinanceData } from '@/hooks/useFinanceData';
 
 export default function Home() {
   const {
@@ -19,147 +19,139 @@ export default function Home() {
     getStats,
     getMonthlyData,
     getCategorySpending
-  } = useFinanceData()
-  
-  const [showForm, setShowForm] = useState(false)
-  const [activeTab, setActiveTab] = useState('overview')
-  
-  const stats = getStats()
-  const monthlyData = getMonthlyData()
-  const categorySpending = getCategorySpending()
+  } = useFinanceData();
+
+  const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const stats = getStats();
+  const monthlyData = getMonthlyData();
+  const categorySpending = getCategorySpending();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container-16-9">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', py: 4 }}>
+      <Container maxWidth="lg">
         {/* Header */}
-        <header className="py-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <DollarSignIcon className="h-8 w-8 text-green-600" />
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AttachMoneyIcon color="success" sx={{ fontSize: 40 }} />
+              <Typography variant="h3" fontWeight={700}>
                 Personal Finance
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Track your income and expenses beautifully
-              </p>
-            </div>
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Transaction
-            </Button>
-          </div>
-        </header>
+              </Typography>
+            </Box>
+            <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
+              Track your income and expenses with elegance
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setShowForm(true)}
+            sx={{ fontWeight: 600, px: 3, py: 1.5, fontSize: 16 }}
+          >
+            Add Transaction
+          </Button>
+        </Box>
 
         {/* Navigation */}
-        <nav className="py-4">
-          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'transactions', label: 'Transactions' },
-              { id: 'analytics', label: 'Analytics' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </nav>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => setActiveTab(v)}
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{ mb: 4 }}
+        >
+          <Tab label="Overview" />
+          <Tab label="Transactions" />
+          <Tab label="Analytics" />
+        </Tabs>
 
         {/* Main Content */}
-        <main className="py-6">
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
+        <Box sx={{ mt: 2 }}>
+          {activeTab === 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <StatsCards stats={stats} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Transactions</CardTitle>
-                    <CardDescription>Your latest financial activity</CardDescription>
-                  </CardHeader>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4 }}>
+                <Card sx={{ flex: 1 }}>
+                  <CardHeader
+                    title={<Typography variant="h6">Recent Transactions</Typography>}
+                    subheader={<Typography color="text.secondary">Your latest financial activity</Typography>}
+                  />
                   <CardContent>
-                    <TransactionList 
-                      transactions={transactions.slice(0, 5)} 
+                    <TransactionList
+                      transactions={transactions.slice(0, 5)}
                       onDelete={deleteTransaction}
                       compact
                     />
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Monthly Trend</CardTitle>
-                    <CardDescription>Income vs Expenses over time</CardDescription>
-                  </CardHeader>
+                <Card sx={{ flex: 1 }}>
+                  <CardHeader
+                    title={<Typography variant="h6">Monthly Trend</Typography>}
+                    subheader={<Typography color="text.secondary">Income vs Expenses over time</Typography>}
+                  />
                   <CardContent>
-                    <div className="h-64">
-                      <AnalyticsCharts 
-                        monthlyData={monthlyData.slice(-6)} 
-                        categorySpending={[]} 
+                    <Box sx={{ height: 260 }}>
+                      <AnalyticsCharts
+                        monthlyData={monthlyData.slice(-6)}
+                        categorySpending={[]}
                         type="line"
                       />
-                    </div>
+                    </Box>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
-          {activeTab === 'transactions' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {activeTab === 1 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h4" fontWeight={700}>
                   All Transactions
-                </h2>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
                   {transactions.length} transactions total
-                </div>
-              </div>
+                </Typography>
+              </Box>
               <Card>
-                <CardContent className="p-0">
-                  <TransactionList 
-                    transactions={transactions} 
+                <CardContent>
+                  <TransactionList
+                    transactions={transactions}
                     onDelete={deleteTransaction}
                   />
                 </CardContent>
               </Card>
-            </div>
+            </Box>
           )}
 
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {activeTab === 2 && (
+            <Box>
+              <Typography variant="h4" fontWeight={700} mb={2}>
                 Financial Analytics
-              </h2>
-              <AnalyticsCharts 
-                monthlyData={monthlyData} 
+              </Typography>
+              <AnalyticsCharts
+                monthlyData={monthlyData}
                 categorySpending={categorySpending}
                 type="mixed"
               />
-            </div>
+            </Box>
           )}
-        </main>
+        </Box>
 
         {/* Transaction Form Modal */}
         {showForm && (
           <TransactionForm
             onSubmit={(transaction) => {
-              addTransaction(transaction)
-              setShowForm(false)
+              addTransaction(transaction);
+              setShowForm(false);
             }}
             onClose={() => setShowForm(false)}
           />
         )}
-      </div>
-    </div>
-  )
+      </Container>
+    </Box>
+  );
 }
