@@ -1,71 +1,216 @@
-'use client'
+'use client';
 
-import * as React from 'react';
-import { Delete as TrashIcon, LocalOffer as TagIcon } from '@mui/icons-material';
-import { Box, Card, CardContent, Typography, IconButton, Stack, Chip } from '@mui/material';
-import { Transaction } from '@/lib/types';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListItemSecondaryAction,
+  Avatar,
+  IconButton,
+  Chip,
+  useTheme,
+  Divider,
+} from '@mui/material';
+import {
+  TrendingUp,
+  TrendingDown,
+  Delete,
+  ReceiptLong,
+} from '@mui/icons-material';
+import { Transaction } from '@/types';
 
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
-  compact?: boolean;
 }
 
-export function TransactionList({ transactions, onDelete, compact = false }: TransactionListProps) {
+const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelete }) => {
+  const theme = useTheme();
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const getTransactionIcon = (type: 'income' | 'expense') => {
+    return type === 'income' ? TrendingUp : TrendingDown;
+  };
+
+  const getTransactionColor = (type: 'income' | 'expense') => {
+    return type === 'income' ? theme.palette.success.main : theme.palette.error.main;
+  };
+
+  const renderEmptyState = () => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 8,
+        textAlign: 'center',
+      }}
+    >
+      <ReceiptLong
+        sx={{
+          fontSize: 64,
+          color: 'text.disabled',
+          mb: 2,
+        }}
+      />
+      <Typography variant="h6" color="text.secondary" gutterBottom>
+        No Transactions Yet
+      </Typography>
+      <Typography variant="body2" color="text.disabled" sx={{ maxWidth: 300 }}>
+        Start tracking your finances by adding your first income or expense transaction.
+      </Typography>
+    </Box>
+  );
+
   if (transactions.length === 0) {
     return (
-      <Box textAlign="center" py={6} color="text.secondary">
-        <Typography variant="h6" gutterBottom>No transactions yet</Typography>
-        <Typography variant="body2">Add your first transaction to get started!</Typography>
-      </Box>
+      <Card>
+        <CardContent>
+          <Typography variant="h5" component="h2" gutterBottom align="center">
+            Recent Transactions
+          </Typography>
+          {renderEmptyState()}
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <Stack spacing={2} pt={compact ? 2 : 4}>
-      {transactions.map((transaction) => (
-        <Card key={transaction.id} sx={{ borderRadius: 3, boxShadow: 3, bgcolor: compact ? 'grey.800' : 'background.paper', color: 'text.primary' }}>
-          <CardContent sx={{ p: compact ? 2 : 3 }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Typography variant={compact ? 'subtitle1' : 'h6'} fontWeight={600} noWrap>
-                {transaction.description}
-              </Typography>
-              <Typography
-                variant={compact ? 'subtitle1' : 'h6'}
-                fontWeight={700}
-                color={transaction.type === 'income' ? 'success.main' : 'error.main'}
-                sx={{ ml: 2 }}
-              >
-                {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={2} mt={1}>
-              <Chip
-                label={transaction.category}
-                color={transaction.type === 'income' ? 'success' : 'error'}
-                size="small"
-                sx={{ fontWeight: 600 }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                {formatDate(transaction.date)}
-              </Typography>
-              {transaction.tags && transaction.tags.length > 0 && (
-                <>
-                  <TagIcon sx={{ fontSize: 16, ml: 1, color: 'action.active' }} />
-                  <Typography variant="caption" color="text.secondary">
-                    {transaction.tags.join(', ')}
-                  </Typography>
-                </>
-              )}
-              <Box flexGrow={1} />
-              <IconButton onClick={() => onDelete(transaction.id)} color="error" size="small">
-                <TrashIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          </CardContent>
-        </Card>
-      ))}
-    </Stack>
+    <Card>
+      <CardContent sx={{ p: 0 }}>
+        <Box sx={{ p: 3, pb: 2 }}>
+          <Typography variant="h5" component="h2" align="center">
+            Recent Transactions
+          </Typography>
+        </Box>
+        
+        <List sx={{ pt: 0 }}>
+          {transactions.map((transaction, index) => {
+            const IconComponent = getTransactionIcon(transaction.type);
+            const color = getTransactionColor(transaction.type);
+            
+            return (
+              <React.Fragment key={transaction.id}>
+                <ListItem
+                  sx={{
+                    px: 3,
+                    py: 2,
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      sx={{
+                        bgcolor: color,
+                        width: 48,
+                        height: 48,
+                      }}
+                    >
+                      <IconComponent />
+                    </Avatar>
+                  </ListItemAvatar>
+                  
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 600,
+                            color: 'text.primary',
+                            mb: 0.5,
+                          }}
+                        >
+                          {transaction.description}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 700,
+                            color: color,
+                            ml: 2,
+                          }}
+                        >
+                          {transaction.type === 'income' ? '+' : '-'}
+                          {formatCurrency(Math.abs(transaction.amount))}
+                        </Typography>
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                        <Chip
+                          label={transaction.category}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            borderColor: 'divider',
+                            color: 'text.secondary',
+                            fontSize: '0.75rem',
+                          }}
+                        />
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ ml: 2 }}
+                        >
+                          {formatDate(transaction.date)}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                  
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      onClick={() => onDelete(transaction.id)}
+                      sx={{
+                        color: 'error.main',
+                        '&:hover': {
+                          backgroundColor: 'error.light',
+                          color: 'error.contrastText',
+                        },
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                
+                {index < transactions.length - 1 && (
+                  <Divider variant="inset" component="li" sx={{ ml: 9 }} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </List>
+      </CardContent>
+    </Card>
   );
-}
+};
+
+export default TransactionList;

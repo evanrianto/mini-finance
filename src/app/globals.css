@@ -1,199 +1,47 @@
-@import "tailwindcss";
-
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 142 76% 36%;
-  --radius: 0.75rem;
-}
-
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 142 77% 73%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 142 77% 73%;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 * {
-  border-color: hsl(var(--border));
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+html,
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-feature-settings: "rlig" 1, "calt" 1;
+  height: 100%;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
 }
 
-/* Custom scrollbar */
+#__next {
+  height: 100%;
+}
+
+/* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
+  background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--foreground));
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
-/* Container for 16:9 optimization */
-.container-16-9 {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-@media (min-width: 2560px) {
-  .container-16-9 {
-    max-width: 1600px;
-    padding: 0 2rem;
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
   }
-}
-
-/* Enhanced card styling */
-.card {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  border: 1px solid hsl(var(--border));
-}
-
-/* Improved button styling */
-.btn-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
-  box-shadow: 0 4px 14px 0 rgb(0 0 0 / 0.1);
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgb(0 0 0 / 0.15);
-}
-
-/* Enhanced transaction list styling */
-.transaction-item {
-  transition: all 0.2s ease;
-  border: 1px solid hsl(var(--border));
-}
-
-.transaction-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.1);
-}
-
-.shadow-3xl {
-  box-shadow: 0 10px 32px 0 rgb(0 0 0 / 0.25), 0 2px 4px 0 rgb(0 0 0 / 0.10);
-}
-
-.text-gray-200, .dark .text-gray-200 {
-  color: #e5e7eb !important;
-}
-.text-gray-100, .dark .text-gray-100 {
-  color: #f3f4f6 !important;
-}
-.text-gray-700, .dark .text-gray-700 {
-  color: #d1d5db !important;
-}
-.placeholder-gray-400::placeholder, .dark .placeholder-gray-400::placeholder {
-  color: #bdbdbd !important;
-  opacity: 1;
-}
-
-/* Chart/analytics text overrides */
-.recharts-cartesian-axis-tick-value,
-.recharts-legend-item-text,
-.recharts-label,
-.recharts-text,
-.recharts-cartesian-axis-label,
-.recharts-pie-label-text {
-  fill: #e5e7eb !important; /* light gray for dark bg */
-  color: #e5e7eb !important;
-  font-weight: 500;
-}
-
-html.light .recharts-cartesian-axis-tick-value,
-html.light .recharts-legend-item-text,
-html.light .recharts-label,
-html.light .recharts-text,
-html.light .recharts-cartesian-axis-label,
-html.light .recharts-pie-label-text {
-  fill: #1e293b !important; /* slate-800 for light bg */
-  color: #1e293b !important;
-}
-
-.dark .bg-card-polished {
-  background-color: #23272f !important; /* lighter than #18181b */
-}
-.dark .text-polished {
-  color: #f3f4f6 !important; /* almost white */
-}
-.dark .border-polished {
-  border-color: #3b4252 !important;
-}
-.dark .text-muted-polished {
-  color: #bfc6d1 !important;
-}
-
-/* Card shadow and border for dark mode */
-.dark .shadow-2xl, .dark .shadow-3xl {
-  box-shadow: 0 10px 32px 0 rgb(0 0 0 / 0.45), 0 2px 4px 0 rgb(0 0 0 / 0.25) !important;
-}
-
-/* Chart/analytics text overrides (increase contrast) */
-.recharts-cartesian-axis-tick-value,
-.recharts-legend-item-text,
-.recharts-label,
-.recharts-text,
-.recharts-cartesian-axis-label,
-.recharts-pie-label-text {
-  fill: #f3f4f6 !important;
-  color: #f3f4f6 !important;
-  font-weight: 600;
-}
-
-html.light .recharts-cartesian-axis-tick-value,
-html.light .recharts-legend-item-text,
-html.light .recharts-label,
-html.light .recharts-text,
-html.light .recharts-cartesian-axis-label,
-html.light .recharts-pie-label-text {
-  fill: #1e293b !important;
-  color: #1e293b !important;
-  font-weight: 600;
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
 }

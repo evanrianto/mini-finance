@@ -1,157 +1,228 @@
-'use client'
+'use client';
 
-import * as React from 'react';
-import { useState } from 'react';
-import { Box, Button, Card, CardContent, CardHeader, Typography, Tabs, Tab, Container } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import { TransactionForm } from '@/components/TransactionForm';
-import { TransactionList } from '@/components/TransactionList';
-import { AnalyticsCharts } from '@/components/AnalyticsCharts';
-import { StatsCards } from '@/components/StatsCards';
-import { useFinanceData } from '@/hooks/useFinanceData';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  ThemeProvider,
+  CssBaseline,
+  Box,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Fab,
+  Snackbar,
+  Alert,
+  Container,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  Brightness4,
+  Brightness7,
+  Add,
+} from '@mui/icons-material';
+import { lightTheme, darkTheme } from '@/lib/theme';
+import { databaseService } from '@/lib/database';
+import FinancialSummary from '@/components/FinancialSummary';
+import FinancialCharts from '@/components/FinancialCharts';
+import TransactionList from '@/components/TransactionList';
+import AddTransactionModal from '@/components/AddTransactionModal';
+import { Transaction, FinancialSummary as FinancialSummaryType } from '@/types';
 
 export default function Home() {
-  const {
-    transactions,
-    addTransaction,
-    deleteTransaction,
-    getStats,
-    getMonthlyData,
-    getCategorySpending
-  } = useFinanceData();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<FinancialSummaryType>({
+    income: 0,
+    expenses: 0,
+    balance: 0,
+  });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [loading, setLoading] = useState(true);
 
-  const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
+  const theme = isDarkMode ? darkTheme : lightTheme;
 
-  const stats = getStats();
-  const monthlyData = getMonthlyData();
-  const categorySpending = getCategorySpending();
+  useEffect(() => {
+    setIsDarkMode(prefersDarkMode);
+  }, [prefersDarkMode]);
+
+  const showSnackbar = useCallback((message: string, severity: 'success' | 'error') => {
+    setSnackbar({ open: true, message, severity });
+  }, []);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [transactionsData, summaryData] = await Promise.all([
+        databaseService.getAllTransactions(),
+        databaseService.getSummary(),
+      ]);
+      setTransactions(transactionsData);
+      setSummary(summaryData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      showSnackbar('Failed to load data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [showSnackbar]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleAddTransaction = async (transaction: Parameters<typeof databaseService.addTransaction>[0]) => {
+    try {
+      await databaseService.addTransaction(transaction);
+      await loadData();
+      showSnackbar(`${transaction.type === 'income' ? 'Income' : 'Expense'} added successfully`, 'success');
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    try {
+      await databaseService.deleteTransaction(id);
+      await loadData();
+      showSnackbar('Transaction deleted successfully', 'success');
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+      showSnackbar('Failed to delete transaction', 'error');
+    }
+  };
+
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'background.default',
+          }}
+        >
+          <Typography variant="h4" color="text.primary">
+            Loading...
+          </Typography>
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', py: 4 }}>
-      <Container maxWidth="lg">
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AttachMoneyIcon color="success" sx={{ fontSize: 40 }} />
-              <Typography variant="h3" fontWeight={700}>
-                Personal Finance
-              </Typography>
-            </Box>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
-              Track your income and expenses with elegance
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box
+        sx={{
+          minHeight: '100vh',
+          backgroundColor: 'background.default',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* App Bar */}
+        <AppBar position="sticky" elevation={1} sx={{ backgroundColor: 'background.paper' }}>
+          <Toolbar>
+            <Typography variant="h5" component="h1" sx={{ flexGrow: 1, fontWeight: 700, color: 'primary.main' }}>
+              💰 MiniFinance
             </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => setShowForm(true)}
-            sx={{ fontWeight: 600, px: 3, py: 1.5, fontSize: 16 }}
-          >
-            Add Transaction
-          </Button>
-        </Box>
+            <IconButton onClick={toggleTheme} color="inherit">
+              {isDarkMode ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+          </Toolbar>
+        </AppBar>
 
-        {/* Navigation */}
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => setActiveTab(v)}
-          textColor="primary"
-          indicatorColor="primary"
-          sx={{ mb: 4 }}
+        {/* Main Content with 16:9 Aspect Ratio Container */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            p: 2,
+          }}
         >
-          <Tab label="Overview" />
-          <Tab label="Transactions" />
-          <Tab label="Analytics" />
-        </Tabs>
+          <Container
+            maxWidth={false}
+            sx={{
+              maxWidth: '1600px', // 16:9 aspect ratio for large screens
+              width: '100%',
+              aspectRatio: { lg: '16/9' },
+              maxHeight: { lg: '90vh' },
+              overflow: 'auto',
+              backgroundColor: 'background.paper',
+              borderRadius: 3,
+              boxShadow: theme.shadows[4],
+              p: 0,
+            }}
+          >
+            <Box
+              sx={{
+                height: '100%',
+                overflow: 'auto',
+                p: 3,
+              }}
+            >
+              {/* Financial Summary */}
+              <FinancialSummary summary={summary} />
 
-        {/* Main Content */}
-        <Box sx={{ mt: 2 }}>
-          {activeTab === 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <StatsCards stats={stats} />
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4 }}>
-                <Card sx={{ flex: 1 }}>
-                  <CardHeader
-                    title={<Typography variant="h6">Recent Transactions</Typography>}
-                    subheader={<Typography color="text.secondary">Your latest financial activity</Typography>}
-                  />
-                  <CardContent>
-                    <TransactionList
-                      transactions={transactions.slice(0, 5)}
-                      onDelete={deleteTransaction}
-                      compact
-                    />
-                  </CardContent>
-                </Card>
-                <Card sx={{ flex: 1 }}>
-                  <CardHeader
-                    title={<Typography variant="h6">Monthly Trend</Typography>}
-                    subheader={<Typography color="text.secondary">Income vs Expenses over time</Typography>}
-                  />
-                  <CardContent>
-                    <Box sx={{ height: 260 }}>
-                      <AnalyticsCharts
-                        monthlyData={monthlyData.slice(-6)}
-                        categorySpending={[]}
-                        type="line"
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Box>
-          )}
+              {/* Financial Charts */}
+              <FinancialCharts transactions={transactions} isDarkMode={isDarkMode} />
 
-          {activeTab === 1 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" fontWeight={700}>
-                  All Transactions
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {transactions.length} transactions total
-                </Typography>
-              </Box>
-              <Card>
-                <CardContent>
-                  <TransactionList
-                    transactions={transactions}
-                    onDelete={deleteTransaction}
-                  />
-                </CardContent>
-              </Card>
+              {/* Transaction List */}
+              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
             </Box>
-          )}
-
-          {activeTab === 2 && (
-            <Box>
-              <Typography variant="h4" fontWeight={700} mb={2}>
-                Financial Analytics
-              </Typography>
-              <AnalyticsCharts
-                monthlyData={monthlyData}
-                categorySpending={categorySpending}
-                type="mixed"
-              />
-            </Box>
-          )}
+          </Container>
         </Box>
 
-        {/* Transaction Form Modal */}
-        {showForm && (
-          <TransactionForm
-            onSubmit={(transaction) => {
-              addTransaction(transaction);
-              setShowForm(false);
-            }}
-            onClose={() => setShowForm(false)}
-          />
-        )}
-      </Container>
-    </Box>
+        {/* Floating Action Button */}
+        <Fab
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1000,
+          }}
+          onClick={() => setModalOpen(true)}
+        >
+          <Add />
+        </Fab>
+
+        {/* Add Transaction Modal */}
+        <AddTransactionModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onAdd={handleAddTransaction}
+        />
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        >
+          <Alert
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </ThemeProvider>
   );
 }
